@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Segmentation</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 50%;
+            margin: auto;
+        }
+        input, button {
+            display: block;
+            width: 80%;
+            margin: 8px auto;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        h1 {
+            color: #333;
+        }
+        .graph-container {
+            margin-top: 20px;
+            height: 50px;
+            width: 100%;
+            
+          
+        }
+        .loading {
+            display: none;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>User Segmentation</h1>
+
+        <form id="segmentationForm">
+            <label>Total Steps:</label>
+            <input type="number" id="total_steps" step="any" required>
+
+            <label>Logged Activities Distance (miles):</label>
+            <input type="number" id="logged_distance" step="any" required>
+
+            <label>Moderately Active Distance (miles):</label>
+            <input type="number" id="moderate_distance" step="any" required>
+
+            <label>Light Active Distance (miles):</label>
+            <input type="number" id="light_distance" step="any" required>
+
+            <label>Sedentary Active Distance (miles):</label>
+            <input type="number" id="sedentary_distance" step="any" required>
+
+            <label>Sedentary Minutes:</label>
+            <input type="number" id="sedentary_minutes" step="any" required>
+
+            <label>Calories:</label>
+            <input type="number" id="calories" step="any" required>
+
+            <button type="submit">Predict Segment</button>
+        </form>
+
+        <h2>Segment Prediction: <span id="segment_result">-</span></h2>
+        <p class="loading" id="loading">Processing...</p>
+
+        <div class="graph-container" id="graph_container">
+            {{ graph_html | safe }}
+        </div>
+        <div class="graph-container" id="graph_container_1">
+            {{ graph_html | safe }}
+
+            
+        </div>
+    
+    </div>
+   
+    <script>
+        /**document.getElementById("segmentationForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            // Show loading text
+            document.getElementById("loading").style.display = "block";
+
+            let inputData = {
+                TotalSteps: parseFloat(document.getElementById("total_steps").value),
+                LoggedActivitiesDistance: parseFloat(document.getElementById("logged_distance").value),
+                ModeratelyActiveDistance: parseFloat(document.getElementById("moderate_distance").value),
+                LightActiveDistance: parseFloat(document.getElementById("light_distance").value),
+                SedentaryActiveDistance: parseFloat(document.getElementById("sedentary_distance").value),
+                SedentaryMinutes: parseFloat(document.getElementById("sedentary_minutes").value),
+                Calories: parseFloat(document.getElementById("calories").value)
+            };
+
+            fetch("/predict_segment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(inputData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading text
+                document.getElementById("loading").style.display = "none";
+
+                if (data.error) {
+                    alert("Error: " + data.error);
+                } else {
+                    console.log(data);
+                    // Update segment label
+                    document.getElementById("segment_result").textContent = data.cluster_name;
+
+                    // Update the graph dynamically
+                   var k=document.getElementById("graph_container");
+                   k.style.height=k.offsetHeight+"px";
+                   k.style.width=k.offsetwidth+"px";
+
+                     k.innerHTML= data.graph_html;
+
+                }
+            })
+            .catch(error => {
+                document.getElementById("loading").style.display = "none";
+                console.error("Error:", error);
+                alert("Something went wrong. Please try again.");
+            });
+        });*/
+
+    document.getElementById("segmentationForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        // Show loading text
+        document.getElementById("loading").style.display = "block";
+
+        let inputData = {
+            TotalSteps: parseFloat(document.getElementById("total_steps").value),
+            LoggedActivitiesDistance: parseFloat(document.getElementById("logged_distance").value),
+            ModeratelyActiveDistance: parseFloat(document.getElementById("moderate_distance").value),
+            LightActiveDistance: parseFloat(document.getElementById("light_distance").value),
+            SedentaryActiveDistance: parseFloat(document.getElementById("sedentary_distance").value),
+            SedentaryMinutes: parseFloat(document.getElementById("sedentary_minutes").value),
+            Calories: parseFloat(document.getElementById("calories").value)
+        };
+
+        fetch("/predict_segment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(inputData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return response.text(); // Expecting HTML response now
+        })
+        .then(html => {
+            // Redirect to a new page by replacing the current page content with the response
+            document.open();
+            document.write(html);
+            document.close();
+        })
+        .catch(error => {
+            document.getElementById("loading").style.display = "none";
+            console.error("Error:", error);
+            alert("Something went wrong. Please try again.");
+        });
+    });
+</script>
+
+</body>
+</html>

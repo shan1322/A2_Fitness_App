@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise Classification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+        }
+        button, input[type="file"] {
+            display: block;
+            margin: 10px auto;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        img {
+            margin-top: 10px;
+            max-width: 100%;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Exercise Classification</h1>
+        <input type="file" id="imageUpload" accept="image/*">
+        <button onclick="captureImage()">Capture Image</button>
+        <video id="video" width="320" height="240" autoplay style="display:none;"></video>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <button onclick="classifyImage()">Classify</button>
+        <p id="result"></p>
+        <img id="preview" src="" alt="Uploaded Image" style="display:none;">
+    </div>
+    <script>
+        function classifyImage() {
+            let input = document.getElementById("imageUpload");
+            let file = input.files[0];
+            if (!file) {
+                alert("Please upload or capture an image first.");
+                return;
+            }
+            let formData = new FormData();
+            formData.append("image", file);
+            fetch("/predict_exercise_class", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("result").innerText = "Predicted Class: " + data.class;
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function captureImage() {
+            let video = document.getElementById("video");
+            let canvas = document.getElementById("canvas");
+            let context = canvas.getContext("2d");
+            canvas.width = video.width;
+            canvas.height = video.height;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(blob => {
+                let file = new File([blob], "captured.jpg", { type: "image/jpeg" });
+                let dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                document.getElementById("imageUpload").files = dataTransfer.files;
+                document.getElementById("preview").src = URL.createObjectURL(blob);
+                document.getElementById("preview").style.display = "block";
+            });
+        }
+    </script>
+</body>
+</html>

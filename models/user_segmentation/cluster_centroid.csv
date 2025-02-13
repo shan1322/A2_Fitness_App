@@ -1,0 +1,3 @@
+Cluster,TotalSteps,LoggedActivitiesDistance,ModeratelyActiveDistance,LightActiveDistance,SedentaryActiveDistance,SedentaryMinutes,Calories
+Light Mover,3650.362222,0.004354658,0.138244445,1.89162222,0.000866667,1110.588889,1871.735556
+PRO Mover,11299.9449,0.203512423,0.961795915,4.671714287,0.002285714,881.577551,2700.228571

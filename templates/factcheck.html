@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fact Check</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            width: 50%;
+        }
+        input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fact Check</h1>
+        <p>Enter a fitness or diet-related question to verify if it's supported by research.</p>
+        <input type="text" id="question" placeholder="Enter your question...">
+        <button onclick="factCheck()">Check</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function factCheck() {
+            const question = document.getElementById('question').value;
+
+            if (!question) {
+                alert("Please enter a question!");
+                return;
+            }
+
+            const response = await fetch('/fact_check', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ question }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                document.getElementById('result').innerHTML = `
+                    <p><strong>Relevant Research:</strong> ${data.best_match}</p>
+                    <p><strong>Confidence Score:</strong> ${data.score}</p>
+                `;
+            } else {
+                document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
