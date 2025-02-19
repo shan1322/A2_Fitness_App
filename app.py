@@ -1,6 +1,6 @@
 from joblib import load
 from flask import Flask, request, jsonify, render_template
-from model_helper import load_model_and_preprocessors,get_top_recommendations,predict_with_model,load_nlp_models,find_relevant_text,get_embedding,load_segmentation_model,create_cluster_only_graph,predict_image
+from model_helper import load_tflite_model,predict_image_tflite,load_model_and_preprocessors,get_top_recommendations,predict_with_model,load_nlp_models,find_relevant_text,get_embedding,load_segmentation_model,create_cluster_only_graph,predict_image
 import numpy as np
 import traceback
 import pandas as pd
@@ -217,7 +217,32 @@ def predict_exercise_class():
         error_traceback = traceback.format_exc()
         print(error_traceback)
         return jsonify({'error': error_message, 'traceback': error_traceback}), 400
+@app.route('/Yogaclassification')
+def yoga_classification_page():
+    return render_template('yogaclassification.html')
 
+@app.route('/predict_yoga_class', methods=['POST'])
+def predict_yoga_class():
+    try:
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image uploaded'}), 400
+        
+        image = request.files['image']
+        if image.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+        image_stream = io.BytesIO(image.read())
+        pil_image = Image.open(image_stream).convert("RGB")  # Ensure RGB format
+        pil_image.save("temp.png")
+        interpreter, class_labels=load_tflite_model()
+        
+        prediction = predict_image_tflite(class_labels=class_labels,interpreter=interpreter,image_path="temp.png")
+        
+        return jsonify({'class': str(prediction)})
+    except Exception as e:
+        error_message = str(e)
+        error_traceback = traceback.format_exc()
+        print(error_traceback)
+        return jsonify({'error': error_message, 'traceback': error_traceback}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)

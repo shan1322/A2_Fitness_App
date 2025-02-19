@@ -153,3 +153,25 @@ def predict_image(image_path, model_path="models/image_classifer/cnn_posture_cla
     
     print(f"Predicted class: {class_name}")
     return class_name
+
+def load_tflite_model(tflite_path="models/yoga/mobilenetv2_yoga_quantized.tflite", class_labels_path="models/yoga/class_labels.npy"):
+    interpreter = tf.lite.Interpreter(model_path=tflite_path)
+    interpreter.allocate_tensors()
+    class_labels = np.load(class_labels_path, allow_pickle=True)
+    return interpreter, class_labels.tolist()
+
+
+def predict_image_tflite(interpreter, image_path, class_labels, image_size=(128, 128)):
+    img = load_img(image_path, target_size=image_size)
+    img_array = img_to_array(img) / 255.0
+    img_array = np.expand_dims(img_array, axis=0).astype(np.float32)  # Add batch dimensionk
+    
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    
+    interpreter.set_tensor(input_details[0]['index'], img_array)
+    interpreter.invoke()
+    predictions = interpreter.get_tensor(output_details[0]['index'])
+    
+    predicted_class = np.argmax(predictions, axis=1)[0]
+    return class_labels[predicted_class]
