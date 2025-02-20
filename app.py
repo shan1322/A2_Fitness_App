@@ -207,9 +207,9 @@ def predict_exercise_class():
         image_stream = io.BytesIO(image.read())
         pil_image = Image.open(image_stream).convert("RGB")  # Ensure RGB format
         pil_image.save("temp.png")
+        interpreter, class_labels=load_tflite_model(tflite_path="models/image_classifer/mobilenetv2_posture_quantized.tflite",class_labels_path="models/image_classifer/class_labels.npy")
         
-        
-        prediction = predict_image(image_path="temp.png")
+        prediction = predict_image_tflite(class_labels=class_labels,interpreter=interpreter,image_path="temp.png")
         
         return jsonify({'class': str(prediction)})
     except Exception as e:
